@@ -181,6 +181,77 @@
     min-width: 150px;
 
   }
+  .val-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.5);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+.val-overlay.show{
+  display:flex;
+}
+
+.val-modal{
+  width:420px;
+  background-color: white;
+  padding:24px;
+  color:#ff649a;
+}
+
+.val-options{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  margin-top:18px;
+}
+
+.val-option{
+  background:white;
+  padding: 0px 10px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  cursor:pointer;
+  border-radius: 5px;
+  border: 1px solid black;
+}
+
+.val-option input{
+  accent-color:#ff3f8e;
+  transform:scale(1.2);
+}
+
+.val-option img{
+  width:70%;
+  aspect-ratio:4/1;
+  object-fit:cover;
+  /* border-radius:10px; */
+  border: 1px solid black;
+}
+
+.val-option span{
+  color:#ff3f8e;
+  font-weight:600;
+}
+
+.val-submit{
+  margin-top:18px;
+  width:100%;
+  padding:12px;
+  border:none;
+  background:#ff378b;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+.val-submit:hover {
+  background:#ff006a;
+}
+
 
   @keyframes swim {
     0%   { transform: translateY(0px); }
@@ -226,9 +297,45 @@
 <div class="container" id="bounds">
   <h1>Will you be my valentine?</h1>
   <div class="options">
-    <button class="yes">Yes</button>
+    <button class="yes" id="openValentine">Yes</button>
     <button class="no">No</button>
   </div>
+
+
+<!-- Valentine Modal -->
+<div class="val-overlay" id="valOverlay">
+  <div class="val-modal">
+    <h2>Pick your Valentine's Gift</h2>
+
+    <form id="valForm">
+      <div class="val-options" id="valOptions">
+
+        <!-- Preferred -->
+        <label class="val-option" data-preferred="true">
+          <input type="radio" name="date" value="Dinner" checked>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/d/db/Swamp_rose-mallow.jpg">
+          <span>Flowers from JY</span>
+        </label>
+
+        <label class="val-option">
+          <input type="radio" name="date" value="Movie">
+          <img src="https://valorantstrike.com/wp-content/uploads/Valorant-Mystbloom-Collection-Judge-HD.jpg">
+          <span>Mystic Bloom</span>
+        </label>
+
+        <label class="val-option">
+          <input type="radio" name="date" value="Arcade">
+          <img src="https://static.wikia.nocookie.net/valorant/images/7/79/Gaia%27s_Vengeance_Ares_Green.png/revision/latest?cb=20231003161234">
+          <span>Gaia's Vengeance Ares</span>
+        </label>
+
+      </div>
+
+      <button class="val-submit" type="submit">Submit</button>
+    </form>
+  </div>
+</div>
+
 </div>
 
 <!-- Absolute card -->
@@ -244,96 +351,89 @@
 
 <script>
   const noBtn = document.querySelector('.no');
-  const yesBtn = document.querySelector('.yes');
-  const bounds = document.getElementById('bounds');
-  const margin = 50;
+// const yesBtn = document.querySelector('.yes');
+const bounds = document.getElementById('bounds');
+const margin = 50;
 
-  // Itinerary array
-  const itinerary = [
-    "We take out Mcdo",
-    "Tops",
-    "See where the night takes us",
-    "play Valorant if ever"
-  ];
+// Itinerary array
+const itinerary = [
+  "We take out Mcdo",
+  "Tops",
+  "See where the night takes us",
+  "play Valorant if ever"
+];
 
-  const itineraryList = document.getElementById('itineraryList');
+const itineraryList = document.getElementById('itineraryList');
 
-  // Populate immediately
-  function populateItinerary() {
-    itineraryList.innerHTML = '';
-    itinerary.forEach(item => {
-      const li = document.createElement('li');
-      li.textContent = item;
-      itineraryList.appendChild(li);
-    });
-  }
-
-  populateItinerary(); // Populate on page load
-
-  // adds clickme
-  let existingImg = document.getElementById('clickMeImg');
-  if (existingImg) existingImg.remove();
-  // Create new image
-  const img = document.createElement('img');
-  img.src = './click.png';        // your image file
-  img.id = 'clickMeImg';
-  img.style.position = 'absolute';
-  img.style.left = `18vw`; // beside the No button
-  img.style.top = `12vh`;
-  img.style.width = '10vw';       // adjust size
-  img.style.minWidth = '80px';
-  img.style.aspectRatio = '1/1';
-  img.style.pointerEvents = 'none'; // so it doesn’t block button
-  img.classList.add('click');
-  document.body.appendChild(img);
-
-
-  let firstDodge = true;
-
-function dodgeButton() {
-    noBtn.style.position = 'absolute';
-
-    const containerWidth = bounds.clientWidth;
-    const containerHeight = bounds.clientHeight;
-    const btnWidth = noBtn.offsetWidth;
-    const btnHeight = noBtn.offsetHeight;
-
-    let randomLeft, randomTop;
-
-    if (firstDodge) {
-        // Move a fixed distance from current position
-        const fixedDistance = 10; // pixels
-        const currentLeft = noBtn.offsetLeft;
-        const currentTop = noBtn.offsetTop;
-
-        // Random direction: -1 or +1
-        const dirX = Math.random() < 0.5 ? -1 : 1;
-        const dirY = Math.random() < 0.5 ? -1 : 1;
-
-        randomLeft = Math.min(Math.max(currentLeft + dirX * fixedDistance, 0), containerWidth - btnWidth - margin);
-        randomTop = Math.min(Math.max(currentTop + dirY * fixedDistance, 0), containerHeight - btnHeight - margin);
-
-        firstDodge = false; // next dodges are fully random
-    } else {
-        // Full random dodge
-        randomLeft = Math.floor(Math.random() * (containerWidth - 2 * margin - btnWidth)) + margin;
-        randomTop = Math.floor(Math.random() * (containerHeight - 2 * margin - btnHeight)) + margin;
-    }
-
-    noBtn.style.left = `${randomLeft}px`;
-    noBtn.style.top = `${randomTop}px`;
-
+// Populate itinerary
+function populateItinerary() {
+  itineraryList.innerHTML = '';
+  itinerary.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = item;
+    itineraryList.appendChild(li);
+  });
 }
 
+populateItinerary(); // Populate on page load
 
-  // No button teleport logic
-  noBtn.addEventListener('mouseover', dodgeButton);
-  noBtn.addEventListener('click', dodgeButton);
-  
-  function showFullscreenMessage(text) {
+// Add floating click image
+let existingImg = document.getElementById('clickMeImg');
+if (existingImg) existingImg.remove();
+
+const img = document.createElement('img');
+img.src = './click.png'; // your image file
+img.id = 'clickMeImg';
+img.style.position = 'absolute';
+img.style.left = '18vw'; // beside the No button
+img.style.top = '12vh';
+img.style.width = '10vw'; // adjust size
+img.style.minWidth = '80px';
+img.style.aspectRatio = '1/1';
+img.style.pointerEvents = 'none'; // so it doesn’t block button
+img.classList.add('click');
+document.body.appendChild(img);
+
+let firstDodge = true;
+
+// No button dodge logic
+function dodgeButton() {
+  noBtn.style.position = 'absolute';
+  const containerWidth = bounds.clientWidth;
+  const containerHeight = bounds.clientHeight;
+  const btnWidth = noBtn.offsetWidth;
+  const btnHeight = noBtn.offsetHeight;
+  let randomLeft, randomTop;
+
+  if (firstDodge) {
+    // Move a fixed distance from current position
+    const fixedDistance = 10; // pixels
+    const currentLeft = noBtn.offsetLeft;
+    const currentTop = noBtn.offsetTop;
+    const dirX = Math.random() < 0.5 ? -1 : 1;
+    const dirY = Math.random() < 0.5 ? -1 : 1;
+
+    randomLeft = Math.min(Math.max(currentLeft + dirX * fixedDistance, 0), containerWidth - btnWidth - margin);
+    randomTop = Math.min(Math.max(currentTop + dirY * fixedDistance, 0), containerHeight - btnHeight - margin);
+    firstDodge = false;
+  } else {
+    // Full random dodge
+    randomLeft = Math.floor(Math.random() * (containerWidth - 2 * margin - btnWidth)) + margin;
+    randomTop = Math.floor(Math.random() * (containerHeight - 2 * margin - btnHeight)) + margin;
+  }
+
+  noBtn.style.left = `${randomLeft}px`;
+  noBtn.style.top = `${randomTop}px`;
+}
+
+noBtn.addEventListener('mouseover', dodgeButton);
+noBtn.addEventListener('click', dodgeButton);
+
+// Fullscreen overlay message
+function showFullscreenMessage(text) {
   let overlay = document.getElementById('fullscreenOverlay');
 
-  // Create if not exists
+  // Create overlay if not exists
   if (!overlay) {
     overlay = document.createElement('div');
     overlay.id = 'fullscreenOverlay';
@@ -341,94 +441,204 @@ function dodgeButton() {
 
     const message = document.createElement('div');
     message.id = 'fullscreenOverlayText';
-
     overlay.appendChild(message);
+
     document.body.appendChild(overlay);
 
-    // Click to close (optional but nice UX)
+    // Click to close
     overlay.addEventListener('click', () => {
       overlay.classList.remove('show');
     });
   }
 
   document.getElementById('fullscreenOverlayText').textContent = text;
-
-  // Trigger slide up
   requestAnimationFrame(() => {
     overlay.classList.add('show');
   });
 }
+// const noBtn = document.querySelector('.no');
+// Yes button confetti logic
+// yesBtn.addEventListener('click', () => {
+//   confetti({
+//     particleCount: 150,
+//     spread: 70,
+//     colors: ['#ff69b4', '#ff1493', '#fff0f5'] // Valentine colors
+//   });
+
+//   showFullscreenMessage("See you on 14!");
+
+//   // Create a full-screen canvas for confetti
+//   const confettiCanvas = document.createElement('canvas');
+//   confettiCanvas.style.position = 'fixed';
+//   confettiCanvas.style.top = 0;
+//   confettiCanvas.style.left = 0;
+//   confettiCanvas.style.width = '100%';
+//   confettiCanvas.style.height = '100%';
+//   confettiCanvas.style.pointerEvents = 'none'; // allow clicks through canvas
+//   confettiCanvas.style.zIndex = 9999;
+//   document.body.appendChild(confettiCanvas);
+
+//   const myConfetti = confetti.create(confettiCanvas, {
+//     resize: true,   // auto-resize on window size change
+//     useWorker: true
+//   });
+
+//   function launchConfetti() {
+//     myConfetti({
+//       particleCount: 150,
+//       spread: 70,
+//       colors: ['#ff69b4', '#ff1493', '#fff0f5']
+//     });
+
+//     // Random delay between 1s to 3s
+//     const delay = Math.random() * 2000 + 1000;
+//     setTimeout(launchConfetti, delay);
+//   }
+
+//   launchConfetti();
+// });
+
+// Card expand/contract logic
+const card = document.getElementById('card');
+const closeBtn = document.getElementById('closeBtn');
+
+card.addEventListener('click', () => {
+  card.style.transform = 'scale(2.2)';
+  card.classList.add('expanded');
+});
+
+closeBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  card.style.transform = 'scale(1)';
+  card.classList.remove('expanded');
+});
+
+// Resize font based on card size
+function resizeFont() {
+  const cardWidth = card.clientWidth;
+  const cardHeight = card.clientHeight;
+  const header = card.querySelector('.card-header');
+  const ul = card.querySelector('ul');
+  // Add resizing logic here if needed
+}
+
+window.addEventListener('resize', resizeFont);
+resizeFont(); // Initial call
 
 
-  // Yes button glow on click
-  yesBtn.addEventListener('click', () => {
-    confetti({
+// Valentine modal logic
+const openBtn = document.getElementById('openValentine');
+const overlay = document.getElementById('valOverlay');
+const optionsContainer = document.getElementById('valOptions');
+
+// Open modal
+openBtn.addEventListener('click', () => overlay.classList.add('show'));
+
+// Close modal if clicking outside
+overlay.addEventListener('click', e => { 
+  if(e.target === overlay) overlay.classList.remove('show'); 
+});
+
+// --- Array-backed options ---
+const valOptionsArray = Array.from(optionsContainer.querySelectorAll('.val-option'));
+let preferredIndex = valOptionsArray.findIndex(opt => opt.dataset.preferred === "true");
+// Make clicking the whole div check the radio
+valOptionsArray.forEach(option => {
+  option.addEventListener('click', e => {
+    // Prevent double-handling if clicking directly on radio
+    if (e.target.tagName !== 'INPUT') {
+      const radio = option.querySelector('input[type="radio"]');
+      radio.checked = true;
+
+      // Trigger the preferred swap logic
+      const clickedIndex = valOptionsArray.indexOf(option);
+      if (clickedIndex !== preferredIndex) {
+        swapOptions(clickedIndex, preferredIndex);
+        preferredIndex = clickedIndex;
+      }
+    }
+  });
+});
+
+// Swap two elements in array and DOM
+function swapOptions(i, j) {
+  // Swap array elements
+  [valOptionsArray[i], valOptionsArray[j]] = [valOptionsArray[j], valOptionsArray[i]];
+
+  // Swap positions in DOM
+  const nodeI = valOptionsArray[i];
+  const nodeJ = valOptionsArray[j];
+
+  const nextSibling = nodeJ.nextSibling;
+  optionsContainer.insertBefore(nodeJ, nodeI);
+  if (nextSibling) {
+    optionsContainer.insertBefore(nodeI, nextSibling);
+  } else {
+    optionsContainer.appendChild(nodeI);
+  }
+}
+
+// Click logic
+optionsContainer.addEventListener('click', e => {
+  const clicked = e.target.closest('.val-option');
+  if (!clicked) return;
+
+  const clickedIndex = valOptionsArray.indexOf(clicked);
+
+  // If clicked is already preferred, do nothing
+  if (clickedIndex === preferredIndex) return;
+
+  // Swap clicked with preferred
+  swapOptions(clickedIndex, preferredIndex);
+
+  // Update preferred index
+  preferredIndex = clickedIndex;
+
+  // Make the clicked option the checked radio
+  valOptionsArray[preferredIndex].querySelector('input').checked = true;
+});
+
+// Submit
+document.getElementById('valForm').addEventListener('submit', e => {
+  e.preventDefault();
+  overlay.classList.remove('show');
+
+  showFullscreenMessage("See you on 14!");
+
+  // Create a full-screen canvas for confetti
+  const confettiCanvas = document.createElement('canvas');
+  confettiCanvas.style.position = 'fixed';
+  confettiCanvas.style.top = 0;
+  confettiCanvas.style.left = 0;
+  confettiCanvas.style.width = '100%';
+  confettiCanvas.style.height = '100%';
+  confettiCanvas.style.pointerEvents = 'none'; // allow clicks through canvas
+  confettiCanvas.style.zIndex = 9999;
+  document.body.appendChild(confettiCanvas);
+
+  const myConfetti = confetti.create(confettiCanvas, {
+    resize: true,   // auto-resize on window size change
+    useWorker: true
+  });
+
+  function launchConfetti() {
+    myConfetti({
       particleCount: 150,
       spread: 70,
-      colors: ['#ff69b4', '#ff1493', '#fff0f5'] // Valentine colors
+      colors: ['#ff69b4', '#ff1493', '#fff0f5']
     });
 
-    showFullscreenMessage("See you on 14!")
-
-    // Create a full-screen canvas on top
-    const confettiCanvas = document.createElement('canvas');
-    confettiCanvas.style.position = 'fixed';
-    confettiCanvas.style.top = 0;
-    confettiCanvas.style.left = 0;
-    confettiCanvas.style.width = '100%';
-    confettiCanvas.style.height = '100%';
-    confettiCanvas.style.pointerEvents = 'none'; // allow clicks through
-    confettiCanvas.style.zIndex = 9999; // front-most
-    document.body.appendChild(confettiCanvas);
-
-
-    const myConfetti = confetti.create(confettiCanvas, {
-      resize: true, // auto-resize on window size change
-      useWorker: true
-    });
-
-    function launchConfetti() {
-      myConfetti({
-        particleCount: 150,
-        spread: 70,
-        colors: ['#ff69b4', '#ff1493', '#fff0f5']
-      });
-
-      // Random delay between 1s to 3s
-      const delay = Math.random() * 2000 + 1000;
-      setTimeout(launchConfetti, delay);
-    }
-
-    launchConfetti();
-  });
-
-  // Card expand/contract logic
-  const card = document.getElementById('card');
-  const closeBtn = document.getElementById('closeBtn');
-
-  card.addEventListener('click', () => {
-    card.style.transform = 'scale(2.2)';
-    card.classList.add('expanded');
-    
-  });
-
-  closeBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    card.style.transform = 'scale(1)';
-    card.classList.remove('expanded');
-  });
-
-  // Resize font based on card size
-  function resizeFont() {
-    const cardWidth = card.clientWidth;
-    const cardHeight = card.clientHeight;
-    const header = card.querySelector('.card-header');
-    const ul = card.querySelector('ul');
+    // Random delay between 1s to 3s
+    const delay = Math.random() * 2000 + 1000;
+    setTimeout(launchConfetti, delay);
   }
 
-  window.addEventListener('resize', resizeFont);
-  resizeFont(); // Initial call
+  launchConfetti();
+});
+
+
 </script>
+
 
 </body>
 </html>

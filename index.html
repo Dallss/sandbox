@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valentine Fun</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@latest/dist/confetti.browser.min.js"></script>
+
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f8f8;
+    background-image:
+      linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+    font-family: 'Fredoka One', cursive;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .container {
+    position: relative;
+    width: 90vw;
+    height: 90vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  h1 {
+    font-size: 3rem;
+    color: #ff5c8d;
+    text-shadow: 2px 2px #ffd1dc;
+    margin-bottom: 2rem;
+    text-align: center;
+    padding-bottom: 30px;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    width: 25vw;
+    overflow: auto;
+  }
+
+  .options button {
+    width: 120px;
+    min-width: 100px;
+    height: 50px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+    transition: all 0.3s;
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .no {
+    background-color: #ff4c4c;
+    color: white;
+    z-index: 10;
+  }
+
+  .yes {
+    background-color: green;
+    color: white;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  /* Card styles */
+  .card {
+    position: absolute;
+    top: 10vh;
+    left: 8vw;
+    width: 10vw;
+    min-width: 100px;
+    min-height: 150px;
+    max-height: 80vh;
+    background-color: rgb(255, 241, 138);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    overflow: hidden;
+
+    font-size: clamp(7px, 0.6vw, 32px);
+  }
+
+  .card.expanded {
+    top: 40%;
+    left: 45%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+  }
+
+  /* Close button */
+  .close-btn {
+    position: absolute;
+    top: 5px;
+    right: 4px;
+    font-size: 8px;
+    width: 10px;
+    height: 10px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    display: none;
+  }
+
+  .card.expanded .close-btn {
+    display: block;
+  }
+
+  /* Header fixed inside card */
+  .card-header {
+    background: transparent;
+    padding: 10px;
+    color: #ff5c8d;
+    text-align: center;
+    flex-shrink: 0;
+
+    font-size: clamp(14px, 1vw, 32px);
+  }
+
+  /* Itinerary list */
+  .card ul {
+    list-style-type: '\2610     ';
+    list-style-position: outside;
+    padding: 10px 20px;
+    margin: 0.5vw;
+    overflow-y: auto;
+    flex-grow: 1;
+  }
+
+  #itineraryList li {
+    margin-bottom: 10px; /* space between items */
+  }
+
+  .click {
+    animation: float 2s ease-in-out infinite;
+  }
+
+  .fish {
+    position: absolute;
+    right: 10vw;
+    bottom: 0vh;
+    width: 15vw;
+    min-width: 150px;
+    animation: swim 2s ease-in-out infinite;
+    transform-origin: center;
+  }
+
+  .pic {
+    position: absolute;
+    left: 10vw;
+    bottom: 10vh;
+    width: 22vw;
+    min-width: 150px;
+
+  }
+  .heart {
+    position: absolute;
+    right: 10vw;
+    top: 10vh;
+    width: 25vw;
+    min-width: 150px;
+
+  }
+
+  @keyframes swim {
+    0%   { transform: translateY(0px); }
+    50%  { transform: translateY(-15px); } /* moves up */
+    100% { transform: translateY(0px); }   /* back to original */
+  }
+  @keyframes float {
+    0%   { transform: scale(1); }      /* normal size */
+    50%  { transform: scale(1.1); }    /* bigger */
+    100% { transform: scale(1); }      /* back to normal */
+  }
+
+</style>
+</head>
+<body>
+
+<div class="container" id="bounds">
+  <h1>Will you be my valentine?</h1>
+  <div class="options">
+    <button class="yes">Yes</button>
+    <button class="no">No</button>
+  </div>
+</div>
+
+<!-- Absolute card -->
+<div class="card" id="card">
+  <div class="close-btn" id="closeBtn">✖</div>
+  <div class="card-header">Itinerary</div>
+  <ul id="itineraryList"></ul>
+</div>
+
+<img class="fish" src="./fishzra.png"></img>
+<img class="pic" src="./pic.png"></img>
+<img class="heart" src="./heart.png"></img>
+
+<script>
+  const noBtn = document.querySelector('.no');
+  const yesBtn = document.querySelector('.yes');
+  const bounds = document.getElementById('bounds');
+  const margin = 50;
+
+  // Itinerary array
+  const itinerary = [
+    "We take out Mcdo",
+    "Tops",
+    "See where the night takes us",
+    "play Valorant if ever"
+  ];
+
+  const itineraryList = document.getElementById('itineraryList');
+
+  // Populate immediately
+  function populateItinerary() {
+    itineraryList.innerHTML = '';
+    itinerary.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = item;
+      itineraryList.appendChild(li);
+    });
+  }
+
+  populateItinerary(); // Populate on page load
+  function showFullscreenMessage(message) {
+    // Create the overlay div
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.bottom = '-100%'; // start off-screen at the bottom
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0,0,0,0.8)';
+    overlay.style.color = 'white';
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.style.fontSize = '2rem';
+    overlay.style.zIndex = '9999';
+    overlay.style.transition = 'bottom 1s ease';
+    overlay.textContent = message;
+
+    // Append to body
+    document.body.appendChild(overlay);
+
+    // Trigger the slide-up animation
+    requestAnimationFrame(() => {
+      overlay.style.bottom = '0';
+    });
+  }
+
+  // adds clickme
+  let existingImg = document.getElementById('clickMeImg');
+  if (existingImg) existingImg.remove();
+  // Create new image
+  const img = document.createElement('img');
+  img.src = './click.png';        // your image file
+  img.id = 'clickMeImg';
+  img.style.position = 'absolute';
+  img.style.left = `18vw`; // beside the No button
+  img.style.top = `20vh`;
+  img.style.width = '120px';       // adjust size
+  img.style.aspectRatio = '1/1';
+  img.style.pointerEvents = 'none'; // so it doesn’t block button
+  img.classList.add('click');
+  document.body.appendChild(img);
+
+  // No button teleport logic
+  noBtn.addEventListener('mouseover', () => {
+    noBtn.style.position = 'absolute';
+    const containerWidth = bounds.clientWidth;
+    const containerHeight = bounds.clientHeight;
+    const btnWidth = noBtn.offsetWidth;
+    const btnHeight = noBtn.offsetHeight;
+    const randomLeft = Math.floor(Math.random() * (containerWidth - 2 * margin - btnWidth)) + margin;
+    const randomTop = Math.floor(Math.random() * (containerHeight - 2 * margin - btnHeight)) + margin;
+    noBtn.style.left = `${randomLeft}px`;
+    noBtn.style.top = `${randomTop}px`;
+
+    let clickMeDiv = document.getElementById('clickMeDiv');
+    if (clickMeDiv) clickMeDiv.remove();
+
+    const div = document.createElement('div');
+    div.id = 'clickMeDiv';
+    div.style.position = 'absolute';
+    div.style.left = `40vw`; // beside the No button
+    div.style.bottom = `20vh`;
+    div.style.height = '120px';
+    div.style.pointerEvents = 'none';      // so it doesn’t block button
+    div.style.display = 'flex';
+    div.style.alignItems = 'center';
+    div.style.justifyContent = 'center';
+    div.style.fontSize = 'clamp(21px, 2.3vw, 32px)';
+    div.style.fontFamily = "'Indie Flower', cursive";
+    div.innerText = '... Awa sa gyod nang itenerary';
+    document.body.appendChild(div);
+
+    
+    // Message
+    // Create new div
+    setTimeout(() => {
+      
+    }, 1200); // 1500ms = 1.5 seconds delay
+
+
+
+  });
+
+
+
+
+  // Yes button glow on click
+  yesBtn.addEventListener('click', () => {
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      colors: ['#ff69b4', '#ff1493', '#fff0f5'] // Valentine colors
+    });
+
+    showFullscreenMessage("See you on 14!")
+
+    // Create a full-screen canvas on top
+    const confettiCanvas = document.createElement('canvas');
+    confettiCanvas.style.position = 'fixed';
+    confettiCanvas.style.top = 0;
+    confettiCanvas.style.left = 0;
+    confettiCanvas.style.width = '100%';
+    confettiCanvas.style.height = '100%';
+    confettiCanvas.style.pointerEvents = 'none'; // allow clicks through
+    confettiCanvas.style.zIndex = 9999; // front-most
+    document.body.appendChild(confettiCanvas);
+
+    const myConfetti = confetti.create(confettiCanvas, {
+      resize: true, // auto-resize on window size change
+      useWorker: true
+    });
+
+    function launchConfetti() {
+      myConfetti({
+        particleCount: 150,
+        spread: 70,
+        colors: ['#ff69b4', '#ff1493', '#fff0f5']
+      });
+
+      // Random delay between 1s to 3s
+      const delay = Math.random() * 2000 + 1000;
+      setTimeout(launchConfetti, delay);
+    }
+
+    launchConfetti();
+  });
+
+  // Card expand/contract logic
+  const card = document.getElementById('card');
+  const closeBtn = document.getElementById('closeBtn');
+
+  card.addEventListener('click', () => {
+    card.style.transform = 'scale(2.2)';
+    card.classList.add('expanded');
+    
+  });
+
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    card.style.transform = 'scale(1)';
+    card.classList.remove('expanded');
+  });
+
+  // Resize font based on card size
+  function resizeFont() {
+    const cardWidth = card.clientWidth;
+    const cardHeight = card.clientHeight;
+    const header = card.querySelector('.card-header');
+    const ul = card.querySelector('ul');
+  }
+
+  window.addEventListener('resize', resizeFont);
+  resizeFont(); // Initial call
+</script>
+
+</body>
+</html>

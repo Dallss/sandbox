@@ -83,12 +83,12 @@
   /* Card styles */
   .card {
     position: absolute;
-    top: 10vh;
+    top: 5vh;
     left: 8vw;
     width: 10vw;
     min-width: 100px;
-    min-height: 150px;
-    max-height: 80vh;
+    min-height: 100px;
+    max-height: 20vh;
     background-color: rgb(255, 241, 138);
     box-shadow: 0 5px 20px rgba(0,0,0,0.3);
     transition: all 0.3s ease;
@@ -103,6 +103,7 @@
   .card.expanded {
     top: 40%;
     left: 45%;
+    max-height: 90vh;
     transform: translate(-50%, -50%);
     z-index: 1000;
   }
@@ -192,6 +193,32 @@
     100% { transform: scale(1); }      /* back to normal */
   }
 
+  .fullscreen-overlay {
+  position: fixed;
+  left: 0;
+  bottom: -100%; /* start hidden below screen */
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: clamp(32px, 5vw, 72px);
+  font-family: 'Indie Flower', cursive;
+  text-align: center;
+
+  z-index: 2000;
+  transition: bottom 0.7s cubic-bezier(.22,.68,0,.99);
+}
+
+.fullscreen-overlay.show {
+  bottom: 0;
+}
+
+
 </style>
 </head>
 <body>
@@ -252,8 +279,9 @@
   img.id = 'clickMeImg';
   img.style.position = 'absolute';
   img.style.left = `18vw`; // beside the No button
-  img.style.top = `20vh`;
-  img.style.width = '120px';       // adjust size
+  img.style.top = `12vh`;
+  img.style.width = '10vw';       // adjust size
+  img.style.minWidth = '80px';
   img.style.aspectRatio = '1/1';
   img.style.pointerEvents = 'none'; // so it doesn’t block button
   img.classList.add('click');
@@ -301,7 +329,35 @@ function dodgeButton() {
   // No button teleport logic
   noBtn.addEventListener('mouseover', dodgeButton);
   noBtn.addEventListener('click', dodgeButton);
+  
+  function showFullscreenMessage(text) {
+  let overlay = document.getElementById('fullscreenOverlay');
 
+  // Create if not exists
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'fullscreenOverlay';
+    overlay.className = 'fullscreen-overlay';
+
+    const message = document.createElement('div');
+    message.id = 'fullscreenOverlayText';
+
+    overlay.appendChild(message);
+    document.body.appendChild(overlay);
+
+    // Click to close (optional but nice UX)
+    overlay.addEventListener('click', () => {
+      overlay.classList.remove('show');
+    });
+  }
+
+  document.getElementById('fullscreenOverlayText').textContent = text;
+
+  // Trigger slide up
+  requestAnimationFrame(() => {
+    overlay.classList.add('show');
+  });
+}
 
 
   // Yes button glow on click
@@ -324,6 +380,7 @@ function dodgeButton() {
     confettiCanvas.style.pointerEvents = 'none'; // allow clicks through
     confettiCanvas.style.zIndex = 9999; // front-most
     document.body.appendChild(confettiCanvas);
+
 
     const myConfetti = confetti.create(confettiCanvas, {
       resize: true, // auto-resize on window size change

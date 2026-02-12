@@ -241,32 +241,6 @@
   }
 
   populateItinerary(); // Populate on page load
-  function showFullscreenMessage(message) {
-    // Create the overlay div
-    const overlay = document.createElement('div');
-    overlay.style.position = 'fixed';
-    overlay.style.bottom = '-100%'; // start off-screen at the bottom
-    overlay.style.left = '0';
-    overlay.style.width = '100%';
-    overlay.style.height = '100%';
-    overlay.style.backgroundColor = 'rgba(0,0,0,0.8)';
-    overlay.style.color = 'white';
-    overlay.style.display = 'flex';
-    overlay.style.justifyContent = 'center';
-    overlay.style.alignItems = 'center';
-    overlay.style.fontSize = '2rem';
-    overlay.style.zIndex = '9999';
-    overlay.style.transition = 'bottom 1s ease';
-    overlay.textContent = message;
-
-    // Append to body
-    document.body.appendChild(overlay);
-
-    // Trigger the slide-up animation
-    requestAnimationFrame(() => {
-      overlay.style.bottom = '0';
-    });
-  }
 
   // adds clickme
   let existingImg = document.getElementById('clickMeImg');
@@ -284,47 +258,48 @@
   img.classList.add('click');
   document.body.appendChild(img);
 
-  // No button teleport logic
-  noBtn.addEventListener('mouseover', () => {
+
+  let firstDodge = true;
+
+function dodgeButton() {
     noBtn.style.position = 'absolute';
+
     const containerWidth = bounds.clientWidth;
     const containerHeight = bounds.clientHeight;
     const btnWidth = noBtn.offsetWidth;
     const btnHeight = noBtn.offsetHeight;
-    const randomLeft = Math.floor(Math.random() * (containerWidth - 2 * margin - btnWidth)) + margin;
-    const randomTop = Math.floor(Math.random() * (containerHeight - 2 * margin - btnHeight)) + margin;
+
+    let randomLeft, randomTop;
+
+    if (firstDodge) {
+        // Move a fixed distance from current position
+        const fixedDistance = 10; // pixels
+        const currentLeft = noBtn.offsetLeft;
+        const currentTop = noBtn.offsetTop;
+
+        // Random direction: -1 or +1
+        const dirX = Math.random() < 0.5 ? -1 : 1;
+        const dirY = Math.random() < 0.5 ? -1 : 1;
+
+        randomLeft = Math.min(Math.max(currentLeft + dirX * fixedDistance, 0), containerWidth - btnWidth - margin);
+        randomTop = Math.min(Math.max(currentTop + dirY * fixedDistance, 0), containerHeight - btnHeight - margin);
+
+        firstDodge = false; // next dodges are fully random
+    } else {
+        // Full random dodge
+        randomLeft = Math.floor(Math.random() * (containerWidth - 2 * margin - btnWidth)) + margin;
+        randomTop = Math.floor(Math.random() * (containerHeight - 2 * margin - btnHeight)) + margin;
+    }
+
     noBtn.style.left = `${randomLeft}px`;
     noBtn.style.top = `${randomTop}px`;
 
-    let clickMeDiv = document.getElementById('clickMeDiv');
-    if (clickMeDiv) clickMeDiv.remove();
-
-    const div = document.createElement('div');
-    div.id = 'clickMeDiv';
-    div.style.position = 'absolute';
-    div.style.left = `40vw`; // beside the No button
-    div.style.bottom = `20vh`;
-    div.style.height = '120px';
-    div.style.pointerEvents = 'none';      // so it doesn’t block button
-    div.style.display = 'flex';
-    div.style.alignItems = 'center';
-    div.style.justifyContent = 'center';
-    div.style.fontSize = 'clamp(21px, 2.3vw, 32px)';
-    div.style.fontFamily = "'Indie Flower', cursive";
-    div.innerText = '... Awa sa gyod nang itenerary';
-    document.body.appendChild(div);
-
-    
-    // Message
-    // Create new div
-    setTimeout(() => {
-      
-    }, 1200); // 1500ms = 1.5 seconds delay
+}
 
 
-
-  });
-
+  // No button teleport logic
+  noBtn.addEventListener('mouseover', dodgeButton);
+  noBtn.addEventListener('click', dodgeButton);
 
 
 
